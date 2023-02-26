@@ -1,0 +1,28 @@
+.ticket-info {
+    display: flex;
+    flex-direction: column;
+    align-items: start;
+    width: 140px;
+
+    &__header{ 
+    letter-spacing: 0.5px;
+    font-size: 12px;
+    line-height: 18px;
+    color:#A0B0B9;
+    }
+
+    &__field{
+    color: #4A4A4A;
+    font-size: 14px;
+    line-height: 21px;
+    // @media screen and (max-width: 780px){
+    //       column-gap: 5px;
+    //       border: 2px solid red;
+    // }
+    }
+  }
+  @media screen and (max-width: 850px){
+    .ticket-info{
+        width: 120px;
+    }
+}
