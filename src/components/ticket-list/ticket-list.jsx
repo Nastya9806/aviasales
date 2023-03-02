@@ -1,46 +1,68 @@
 import React from 'react'
 import { sortBy } from 'lodash'
 import { useSelector } from 'react-redux'
+import { Alert } from 'antd'
+import { v4 as uuidv4 } from 'uuid'
+
+import Ticket from '../ticket'
+import ShowMore from '../btn-show-more'
+
 import classes from './ticket-list.module.scss'
-import Ticket from '../ticket/ticket'
-import ShowMore from '../ShowMore/show-more'
- 
+
 function TicketList() {
-    const { tickets, countToView } = useSelector((state) => state.tickets)
-   
-    const filters = useSelector((state) => {
-      return Object.values(state.transfer).reduce((newArr, item) => {
-        if (item.transfers !== undefined && item.isChecked) {
-          newArr.push(item.transfers)
+  const { tickets, counter } = useSelector((state) => state.tickets)
+  const transferState = useSelector((state) => state.transfer)
+  const selected = useSelector((state) => state.sort)
+
+  const getFilteredTransfers = Object.values(transferState).reduce((newArr, i) => {
+    if (i.transfers !== undefined && i.isChecked) {
+      newArr.push(i.transfers)
+    }
+    return newArr
+  }, [])
+
+  const getSortedTickets = (arrToFilter, transfersArr) => {
+    const filteredTickets = arrToFilter.filter((el) => {
+      return transfersArr.includes(el.segments[0].stops.length) && transfersArr.includes(el.segments[1].stops.length)
+    })
+
+    const sortedData = sortBy(filteredTickets, [
+      (i) => {
+        const duration = i.segments[0].duration + i.segments[1].duration
+        const withoutStops = i.segments[0].stops.length + i.segments[1].stops.length
+        if (selected === 'fastest') {
+          return duration
         }
-        return newArr
-      }, [])
-    })
-    const filtrArr = tickets.filter((el) => {
-      return el.segments[0].stops.length === el.segments[1].stops.length && filters.includes(el.segments[0].stops.length)
-    })
-
-    const selected = useSelector((state) => {
-      return state.sort
-    })
-
-    const sortArr = sortBy(filtrArr, [
-      (o) => {
-        return selected === 'fastest' ? o.segments[0].duration + o.segments[1].duration : o.price
+        if (selected === 'cheapest') {
+          return i.price
+        }
+        if (selected === 'optimal') {
+          return i.price < 20000 && duration ? i.price && withoutStops : null
+        }
+        if (!selected) {
+          return i
+        }
       },
     ])
-  
-    const arrToView = sortArr.slice(0, countToView)
-    return (
-      <>
-        <ul className={classes['ticket-list']}>
-          {arrToView.map((ticket, index) => (
-            <Ticket key={index} ticket={ticket} />
-          ))}
-        </ul>
-        {arrToView.length ? <ShowMore /> : <span>Рейсов, подходящих под заданные фильтры, не найдено</span>}
-      </>
-    )
+    return sortedData
   }
-  
-  export default TicketList
+
+  const ticketsListArr = getSortedTickets(tickets, getFilteredTransfers).slice(0, counter)
+
+  return (
+    <>
+      <ul className={classes['ticket-list']}>
+        {ticketsListArr.map((ticket) => (
+          <Ticket key={uuidv4()} ticket={ticket} />
+        ))}
+      </ul>
+      {ticketsListArr.length >= 5 ? (
+        <ShowMore />
+      ) : (
+        <Alert message="Рейсов, подходящих под заданные фильтры, не найдено" type="info"></Alert>
+      )}
+    </>
+  )
+}
+
+export default TicketList

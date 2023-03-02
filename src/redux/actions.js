@@ -1,56 +1,68 @@
-import {SELECT, SELECT_ALL, FILTER_ALL_OFF, SORT,GET_SEARCH_ID, LOAD_TICKETS, LOADER_DISPLAY_OFF, LOADER_DISPLAY_ON, ERROR_ON, SHOW_MORE,
-   } from './types'
-  import { AviaSalesService } from '../services/aviasales'
+import { Aviasales } from '../services/aviasales'
 
+import {
+  SELECT,
+  SELECT_ALL,
+  FILTER_ALL_OFF,
+  SORT,
+  GET_SEARCH_ID,
+  LOADING,
+  LOADING_FALSE,
+  ERROR_ON,
+  SHOW_MORE,
+  UPDATE_TICKETS_LIST,
+} from './types'
 
 export const select = (key, filtersObj) => {
-  if(key === 'all' && filtersObj[key].isChecked){
-    return {type: FILTER_ALL_OFF}
+  if (key === 'all' && filtersObj[key].isChecked) {
+    return { type: FILTER_ALL_OFF }
   }
-  if(key === 'all' && !filtersObj[key].isChecked){
-    return {type: SELECT_ALL}
+  if (key === 'all' && !filtersObj[key].isChecked) {
+    return { type: SELECT_ALL }
   }
-  if(key !== 'all' && !filtersObj[key].isChecked && Object.values(filtersObj).filter((obj) => obj.isChecked).length === 3){
-    return {type: SELECT_ALL}
+  if (
+    key !== 'all' &&
+    !filtersObj[key].isChecked &&
+    Object.values(filtersObj).filter((obj) => obj.isChecked).length === 3
+  ) {
+    return { type: SELECT_ALL }
   }
-  return{
+  return {
     type: SELECT,
     selectedKey: key,
-  } 
+  }
 }
 
 export function sortCheap() {
   return {
     type: SORT,
     order: 'cheapest',
-  };
+  }
 }
 
 export function sortFast() {
   return {
     type: SORT,
     order: 'fastest',
-  };
+  }
 }
 
 export function sortOptimal() {
   return {
     type: SORT,
     order: 'optimal',
-  };
-}
-
-
-
-function loaderDisplayOn() {
-  return {
-    type: LOADER_DISPLAY_ON,
   }
 }
 
-function loaderDisplayOff() {
+function isLoading() {
   return {
-    type: LOADER_DISPLAY_OFF,
+    type: LOADING,
+  }
+}
+
+function isNotLoading() {
+  return {
+    type: LOADING_FALSE,
   }
 }
 
@@ -68,7 +80,7 @@ function errorOn(err) {
 export function getSearchId() {
   return async (dispatch) => {
     try {
-      const searchId = await AviaSalesService.getSearchId().then(async (id) => id)
+      const searchId = await Aviasales.getSearchId()
       if (searchId) {
         dispatch({
           type: GET_SEARCH_ID,
@@ -81,30 +93,26 @@ export function getSearchId() {
   }
 }
 
+export const updateTicketsList = (newCounter) => {
+  return {
+    type: UPDATE_TICKETS_LIST,
+    payload: newCounter,
+  }
+}
+
 export function loadTickets(searchId) {
   return async (dispatch) => {
+    dispatch(isLoading())
     try {
-      let resArr = []
-      dispatch(loaderDisplayOn())
-
-      let stop = false
-      do {
-        // eslint-disable-next-line no-await-in-loop
-        resArr = await AviaSalesService.getTickets(searchId)
-          .then((res) => res)
-          .catch()
-        if (resArr) {
-          stop = resArr.stop
-          dispatch({
-            type: LOAD_TICKETS,
-            data: resArr,
-          })
+      await Aviasales.getTickets(searchId).then((res) => {
+        dispatch(updateTicketsList(res.tickets))
+        if (res.stop) {
+          dispatch(isNotLoading())
         }
-      } while (!stop)
-      dispatch(loaderDisplayOff())
+      })
+      dispatch(isNotLoading())
     } catch (err) {
-      dispatch(errorOn(err))
-      dispatch(loaderDisplayOff())
+      errorOn(err)
     }
   }
 }

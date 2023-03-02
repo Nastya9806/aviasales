@@ -1,9 +1,13 @@
+@import "src/assets/variables.scss";
+
 .app{
-    background-color: #f3f7fa;
     width: 100%;
     height: 100%;
     padding: 20px 0;
-    border: 2px solid red;
+
+    @media screen and (max-width: $mobile){
+        min-width: 550px;
+}
 }
 
 .app__wrapper{
@@ -11,20 +15,16 @@
     margin: 0 auto;
     display: flex;
     gap: 20px;
+
+    @media screen and (max-width: $mobile){
+        flex-wrap: wrap;
+        justify-content: center;
+        padding: 20px;
+}
 }
 
 .app__main{ 
     display: flex;
-    gap: 20px;
+    gap: 15px;
     flex-direction: column;
-    justify-content: center;
-}
-
-@media screen and (max-width: 850px){
-    .app__wrapper{
-        // width: 100vw;
-        flex-wrap: wrap;
-        margin: 0;
-        padding: 20px;
-    }
 }

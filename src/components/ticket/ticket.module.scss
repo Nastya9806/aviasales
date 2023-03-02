@@ -1,3 +1,5 @@
+@import "src/assets/variables.scss";
+
 .ticket {
     display: flex;
     flex-direction: column;
@@ -8,6 +10,15 @@
     border-radius: 5px;
     gap: 20px;
     margin: 0;
+    cursor: pointer;
+    &:hover{
+        box-shadow: 1px 3px 20px 4px rgba(207, 212, 218, 0.75);
+        transform: scale(0.99);
+    }
+
+@media screen and (max-width: $mobile){
+    width: 425px;
+}
 
     &__header{
         display: flex;
@@ -27,16 +38,3 @@
     row-gap: 10px;
     }
   }
-
-  @media screen and (max-width: 850px){
-    .ticket{
-        width: 85vw;
-
-        &__fields{
-            column-gap: 5px;
-        }
-    }
-    // .fields{
-    //     column-gap: 5px;
-    // }
-}
